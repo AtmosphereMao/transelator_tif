@@ -1,0 +1,56 @@
+<VRTDataset rasterXSize="15606" rasterYSize="13164" subClass="VRTWarpedDataset">
+  <SRS dataAxisToSRSAxisMapping="1,2">PROJCS["Google Maps Global Mercator (deprecated)",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Mercator_1SP"],PARAMETER["central_meridian",0],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],EXTENSION["PROJ4","+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs"],AUTHORITY["EPSG","900913"]]</SRS>
+  <GeoTransform>  1.2624467109865127e+07,  1.1690067715465343e-02,  0.0000000000000000e+00,  2.6532842375534391e+06,  0.0000000000000000e+00, -1.1690067715465343e-02</GeoTransform>
+  <Metadata domain="IMAGE_STRUCTURE">
+    <MDI key="INTERLEAVE">PIXEL</MDI>
+  </Metadata>
+  <VRTRasterBand dataType="Byte" band="1" subClass="VRTWarpedRasterBand">
+    <NoDataValue>-10000</NoDataValue>
+    <ColorInterp>Red</ColorInterp>
+  </VRTRasterBand>
+  <VRTRasterBand dataType="Byte" band="2" subClass="VRTWarpedRasterBand">
+    <NoDataValue>-10000</NoDataValue>
+    <ColorInterp>Green</ColorInterp>
+  </VRTRasterBand>
+  <VRTRasterBand dataType="Byte" band="3" subClass="VRTWarpedRasterBand">
+    <NoDataValue>-10000</NoDataValue>
+    <ColorInterp>Blue</ColorInterp>
+  </VRTRasterBand>
+  <VRTRasterBand dataType="Byte" band="4" subClass="VRTWarpedRasterBand">
+    <NoDataValue>-10000</NoDataValue>
+    <ColorInterp>Alpha</ColorInterp>
+  </VRTRasterBand>
+  <BlockXSize>512</BlockXSize>
+  <BlockYSize>128</BlockYSize>
+  <GDALWarpOptions>
+    <WarpMemoryLimit>6.71089e+07</WarpMemoryLimit>
+    <ResampleAlg>NearestNeighbour</ResampleAlg>
+    <WorkingDataType>Byte</WorkingDataType>
+    <Option name="INIT_DEST">0</Option>
+    <Option name="ERROR_OUT_IF_EMPTY_SOURCE_WINDOW">FALSE</Option>
+    <SourceDataset relativeToVRT="1">./ldk.tif</SourceDataset>
+    <Transformer>
+      <GenImgProjTransformer>
+        <SrcGeoTransform>746458.221110000042,0.0107300000000000017,0,2565012.01954000024,0,-0.0107300000000000017</SrcGeoTransform>
+        <SrcInvGeoTransform>-69567401.7809878737,93.1966449207828305,0,239050514.402609497,0,-93.1966449207828305</SrcInvGeoTransform>
+        <DstGeoTransform>12624467.1098651271,0.0116900677154653434,0,2653284.2375534391,0,-0.0116900677154653434</DstGeoTransform>
+        <DstInvGeoTransform>-1079931050.6271596,85.5427038011980585,0,226969107.633421481,0,-85.5427038011980585</DstInvGeoTransform>
+        <ReprojectTransformer>
+          <ReprojectionTransformer>
+            <SourceSRS>PROJCS["WGS 84 / UTM zone 49N",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",111],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","32649"]]</SourceSRS>
+            <TargetSRS>PROJCS["Google Maps Global Mercator (deprecated)",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Mercator_1SP"],PARAMETER["central_meridian",0],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],EXTENSION["PROJ4","+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs"],AUTHORITY["EPSG","900913"]]</TargetSRS>
+            <Options>
+              <Option key="AREA_OF_INTEREST">113.4075175865605,23.17446035571966,113.4091564172277,23.17573123944563</Option>
+            </Options>
+          </ReprojectionTransformer>
+        </ReprojectTransformer>
+      </GenImgProjTransformer>
+    </Transformer>
+    <BandList>
+      <BandMapping src="1" dst="1" />
+      <BandMapping src="2" dst="2" />
+      <BandMapping src="3" dst="3" />
+      <BandMapping src="4" dst="4" />
+    </BandList>
+  </GDALWarpOptions>
+</VRTDataset>
