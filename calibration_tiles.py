@@ -1,6 +1,7 @@
-import gdal2tilesG as gt
+import json
 import sys
 import threading
+import tiff_translator.tif_translator as tt
 
 try:
     from osgeo import gdal
@@ -21,60 +22,65 @@ tif_slice_path = '/home/tif_slice_data'
 
 
 def main():
-    print('=========================START CUT TILES=========================')
+    print('=========================START CALIBRATION TILES=========================')
 
     while True:
         time.sleep(10)
-        t = threading.Thread(target=cutTiles, name="cutTilesThread")
+        t = threading.Thread(target=calibrationTiles, name="calibrationTilesThread")
         t.start()
 
-def cutTiles():
+
+def calibrationTiles():
     timeStr = str(time.time())
-    to_tiles_info_list = redis.get_zrange('to_tiles_info_list', -1)
-    if to_tiles_info_list:
-        for insertID in to_tiles_info_list:
+    to_calibration_info_list = redis.get_zrange('to_calibration_info_list', -1)
+    if to_calibration_info_list:
+        for uniqueID in to_calibration_info_list:
             # 是否已经切片成功或正在切片，php服务器若处理不及时，则会发生重复切片情况
-            isset_success_tiles = True if insertID in redis.get_zrange('to_tiles_success_list:', -1) else False
-            isset_process_tiles = redis.get_values('to_tiles_process_list_info:' + insertID)
-            if isset_success_tiles or isset_process_tiles:
+            isset_success_calibration = True if uniqueID in redis.get_zrange('to_calibration_success_list:',
+                                                                             -1) else False
+            isset_process_calibration = redis.get_values('to_calibration_process_list_info:' + uniqueID)
+            if isset_success_calibration or isset_process_calibration:
                 continue
-            redis.set_values('to_tiles_process_list_info:' + str(insertID), timeStr)
-            to_tiles_info = redis.get_values('to_tiles_info:' + insertID)
-            if to_tiles_info:
+            redis.set_values('to_calibration_process_list_info:' + str(uniqueID), timeStr)
+            to_calibration_info = redis.get_values('to_calibration_info:' + uniqueID)
+            if to_calibration_info:
+                print("Handel with: " + uniqueID)
                 try:
+
                     param = [
-                        "none",
-                        "-p", "mercator",
-                        "-z", "0-24",
+                        '-s', tif_path + '/ir/' + to_calibration_info['source_id'] + '/' + to_calibration_info['source_id'] + '.tif',
+                        '-t', tif_path + '/visible/' + to_calibration_info['tif_code'] + '.tif',
+                        '-p', 'geo',
+                        '-w', tif_path + '/ir/' + to_calibration_info['source_id'] + '/' + to_calibration_info['source_id'] + '.tif',
                     ]
-                    # 可见光
-                    if to_tiles_info['type'] == 'visible':
-                        ldk_path = tif_path + '/visible/' + to_tiles_info['tif_code'] + '.tif'  # 切片图
-                        slice_path = tif_slice_path + '/' + insertID + '/visible'  # 输出路径
-                        param.append(ldk_path)
-                        param.append(slice_path)
-                    # 热成像
-                    elif to_tiles_info['type'] == 'ir':
-                        rcx_path = tif_path + '/ir/' + to_tiles_info['source_id'] + '/' + to_tiles_info['source_id'] + '.tif'
-                        slice_path = tif_path + '/ir/' + to_tiles_info['source_id'] + '/'  # 输出路径
-                        param.append(rcx_path)
-                        param.append(slice_path)
 
-                    gdal2tiles = gt.GDAL2Tiles(param[1:])
-                    gdal2tiles.process()
+                    tt.translator(param,
+                                  rcx_point=json.loads(to_calibration_info['rcx_point']),
+                                  ldk_point=json.loads(to_calibration_info['ldk_point']))
 
-                    redis.set_zrange('to_tiles_success_list:', {insertID: timeStr})
+                    # 切片任务（改为php服务器处理）
+                    # tifInfo = {
+                    #     'source_id': to_calibration_info['source_id'],
+                    #     'type': 'ir'
+                    # }
+                    # cutTifMsg = hashlib.md5(timeStr).hexdigest()
+                    # redis.set_values('to_tiles_info:' + cutTifMsg, tifInfo)
+                    # redis.set_zrange('to_tiles_info_list:', {cutTifMsg, cutTifMsg})
 
+                    # 完成配准
+                    redis.set_zrange('to_calibration_success_list:', {uniqueID: timeStr})
+                    print("Finished: " + uniqueID)
                 except Exception as e:
                     info = {}
-                    info['msg'] = '无法切片，请找开发人员或重新上传tif'
+                    info['msg'] = '无法配准，请找开发人员或重新上传tif'
                     info['time'] = int(time.time())
                     info['num'] = 0
-                    redis.set_values('show_web_info:' + insertID, info, 7200)
+                    redis.set_values('show_web_info:' + uniqueID, info, 7200)
+                    redis.del_zrange('to_calibration_info_list', uniqueID)
+                    redis.remove_key('to_calibration_info:' + uniqueID)
                     print("error:", e)
 
-            redis.remove_key('to_tiles_process_list_info:' + insertID)
-
+            redis.remove_key('to_calibration_process_list_info:' + uniqueID)
 
 if __name__ == '__main__':
     main()

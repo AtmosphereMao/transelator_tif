@@ -1,8 +1,9 @@
+import sys
+
 import cv2
 from osgeo import gdal
 from osgeo import osr
 import numpy as np
-from matplotlib import pyplot as plt
 import argparse
 
 def getSRSPair(dataset):
@@ -73,7 +74,11 @@ def plt2imagexy(dataset, lat, lon):
     return x, y
 
 
-def translator(arguments=None):
+def translator(arguments=None, rcx_point=None, ldk_point=None):
+    if ldk_point is None:
+        ldk_point = []
+    if rcx_point is None:
+        rcx_point = []
     parser = argparse.ArgumentParser()
 
     # Parsing the input arguments
@@ -86,7 +91,7 @@ def translator(arguments=None):
     else:
         args = parser.parse_args(args=arguments)
 
-    outputPath = args.write + "/src_warped.tif"  # 输出文件名
+    outputPath = args.write  # 输出文件名
 
     print("SOUCE: ", args.source)
     print("TARGET: ", args.target)
@@ -168,44 +173,43 @@ def translator(arguments=None):
         # rcx_geotransform = (rcx_geotransform[0], ldk_geotransform[1], rcx_geotransform[2],
         #                     rcx_geotransform[3], ldk_geotransform[5], rcx_geotransform[5])
         # rcx_projection = ldk_projection
-
     # geo地理坐标转图坐标
     if args.pattern == "geo":
         rcx_pts = []
         ldk_pts = []
 
         # 投影坐标
-        rcx_point = [[746465.516, 2565001.615],
-                     [746465.643, 2564996.498],
-                     [746478.733, 2565001.912],
-                     [746478.627, 2564996.805],
-                     [746470.429, 2564998.404],
-                     [746470.398, 2564999.865],
-                     [746475.219, 2565000.378],
-                     [746475.251, 2564998.494],
-                     [746478.870, 2564999.326],
-                     [746478.659, 2564997.506],
-                     [746478.796, 2565001.178],
-                     [746465.547, 2565000.185],
-                     [746465.571, 2564998.317],
-                     [746478.631, 2564998.254],
-                     [746478.811, 2565000.063]]
-
-        ldk_point = [[746524.527, 2564945.957],
-                     [746524.804, 2564932.463],
-                     [746559.650, 2564946.751],
-                     [746559.293, 2564933.296],
-                     [746537.535, 2564937.480],
-                     [746537.436, 2564941.349],
-                     [746550.185, 2564942.745],
-                     [746550.020, 2564937.784],
-                     [746559.834, 2564940.000],
-                     [746559.338, 2564935.171],
-                     [746559.669, 2564944.862],
-                     [746524.624, 2564942.159],
-                     [746524.703, 2564937.265],
-                     [746559.760, 2564941.895],
-                     [746559.231, 2564937.106]]
+        # rcx_point = [[746465.516, 2565001.615],
+        #              [746465.643, 2564996.498],
+        #              [746478.733, 2565001.912],
+        #              [746478.627, 2564996.805],
+        #              [746470.429, 2564998.404],
+        #              [746470.398, 2564999.865],
+        #              [746475.219, 2565000.378],
+        #              [746475.251, 2564998.494],
+        #              [746478.870, 2564999.326],
+        #              [746478.659, 2564997.506],
+        #              [746478.796, 2565001.178],
+        #              [746465.547, 2565000.185],
+        #              [746465.571, 2564998.317],
+        #              [746478.631, 2564998.254],
+        #              [746478.811, 2565000.063]]
+        #
+        # ldk_point = [[746524.527, 2564945.957],
+        #              [746524.804, 2564932.463],
+        #              [746559.650, 2564946.751],
+        #              [746559.293, 2564933.296],
+        #              [746537.535, 2564937.480],
+        #              [746537.436, 2564941.349],
+        #              [746550.185, 2564942.745],
+        #              [746550.020, 2564937.784],
+        #              [746559.834, 2564940.000],
+        #              [746559.338, 2564935.171],
+        #              [746559.669, 2564944.862],
+        #              [746524.624, 2564942.159],
+        #              [746524.703, 2564937.265],
+        #              [746559.760, 2564941.895],
+        #              [746559.231, 2564937.106]]
 
         countPoint = len(rcx_point)
 
@@ -213,7 +217,10 @@ def translator(arguments=None):
             rcx_lat, rcx_lon, *_ = [float(x) for x in rcx_point[i]]
             ldk_lat, ldk_lon, *_ = [float(x) for x in ldk_point[i]]
 
-            rcx_lon -= 0.1
+            rcx_lon, rcx_lat = lonlat2geo(src, rcx_lon, rcx_lat)    # 经纬度转geo
+            ldk_lon, ldk_lat = lonlat2geo(src, ldk_lon, ldk_lat)
+
+            rcx_lon -= 0.1  # 纠正
 
             # rcx_lat, rcx_lon = geo2lonlat(src, rcx_lat, rcx_lon)  # 转经纬度
             # ldk_lat, ldk_lon = geo2lonlat(target, ldk_lat, ldk_lon)
@@ -228,6 +235,8 @@ def translator(arguments=None):
             ldk_pts.append((ldk_px, ldk_py))
 
     else:
+        from matplotlib import pyplot as plt
+
         print("Please click on the corresponding points on the images.")
         # 显示两幅图像
         fig, ax = plt.subplots(1, 2, figsize=(10, 10))
@@ -350,9 +359,11 @@ def translator(arguments=None):
 
 if __name__ == '__main__':
     param = [
-        '-s', 'rcx.tif',
-        '-t', 'ldk.tif',
+        '-s', './assets/rcx.tif',
+        '-t', './assets/ldk.tif',
         '-p', 'geo',
-        '-w', './data',
+        '-w', './data/src_warp.tif',
     ]
-    translator(param)
+    rcx_point = [[113.40816793701059,23.175133667326755],[113.40852950406121,23.175136437529563],[113.40852950381483,23.175001154054691],[113.40817093354549,23.174998383913188],[113.40816793701059,23.175133205608713]]
+    ldk_point = [[113.40816793701059,23.175133667326755],[113.40852950406121,23.175136437529563],[113.40852950381483,23.175001154054691],[113.40817093354549,23.174998383913188],[113.40816793701059,23.175133205608713]]
+    translator(param, rcx_point, ldk_point)

@@ -71,6 +71,8 @@ def cutTiles():
                     info['time'] = int(time.time())
                     info['num'] = 0
                     redis.set_values('show_web_info:' + insertID, info, 7200)
+                    redis.del_zrange('to_tiles_info_list', insertID)
+                    redis.remove_key('to_tiles_info:'+insertID)
                     print("error:", e)
 
             redis.remove_key('to_tiles_process_list_info:' + insertID)
