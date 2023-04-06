@@ -53,8 +53,8 @@ import numpy as np
 # detect_features(ldk, roi)
 
 # load images
-rcx = cv2.imread('rcx.tif', 0)
-ldk = cv2.imread('ldk.tif', 0)
+rcx = cv2.imread('./tif_assert/rcx.tif', 0)
+ldk = cv2.imread('./tif_assert/ldk.tif', 0)
 
 # resize ldk image
 ldk_resized = cv2.resize(ldk, (0,0), fx=0.1, fy=0.1)

@@ -5,9 +5,9 @@ from pyodm import Node, exceptions
 
 image_dir = './tif_assert/visibleLight/'
 result_path = image_dir.split('/')[0]+'_results'
-# ip = '192.168.31.8'    # 改为自己的ip
-ip = 'localhost'
-port = 3000
+ip = '192.168.31.8'    # 改为自己的ip
+# ip = 'localhost'
+port = 3001
 
 start = time.time()
 images_name = os.listdir(image_dir)
@@ -20,26 +20,44 @@ node = Node(ip, port)
 try:
     # Start a task
     print("Uploading images...")
-    task = node.create_task(images_name)
+    task = node.create_task(images_name, {'feature-type': 'sift',
+                                          'feature-quality': 'high',
+                                          'matcher-type': 'flann',
+                                          'skip-3dmodel': True,
+                                          'skip-report': True,
+                                          'use-exif': True,
+                                          'force-gps': True,
+                                          'pc-ept': False,
+                                          'cog': False,
+                                          'gltf': False,
+                                          'pc-quality': 'ultra',
+                                          'orthophoto-compression': 'NONE',
+                                          # 'orthophoto-resolution': 30,
+                                          'auto-boundary': True,
+                                          'crop': 0,
+                                          'gps-accuracy': 1,
+                                          'matcher-neighbors': 8,
+                                          'max-concurrency': 8,
+                                          'min-num-features': 120000,
+                                          'resize-to': -1,
+                                          'fast-orthophoto': True,
+                                          'mesh-octree-depth': 14,
+                                          'ignore-gsd': True,
+                                          # 'sm-no-align': True,
+                                          'dsm': True
+                                          })
     print(task.info())
 
     try:
-        pbar = tqdm(total=100)
-        processing = 0
-        while True:
-            info = task.info()
-            if info.progress==100:
-                break
-            pbar.update(info.progress-processing)
-            processing = info.progress
-            if info.last_error!='':
-                print("error ", info.last_error)
+        print("{}张图加载消耗{}秒".format(len(images_name), time.time() - start))
 
-        print("{}张图消耗{}秒".format(len(images_name), time.time() - start))
+        print("任务进行中，可前往 %s 进行查看" % (ip+":"+str(port)))
 
         # This will block until the task is finished
         # or will raise an exception
         task.wait_for_completion()
+
+        print("{}张图完成消耗{}秒".format(len(images_name), time.time() - start))
 
         print("Task completed, downloading results...")
 
